@@ -1,0 +1,38 @@
+Analyze the following candidate CV against the job opportunity.
+
+CANDIDATE CV:
+{cv_text}
+
+JOB DESCRIPTION:
+{job_description}
+
+APPLICATION DEADLINE:
+{deadline}
+
+Perform the following analysis:
+
+1. Determine the overall CV-to-job alignment score from 0 to 100.
+
+2. Identify the most important job requirements that are clearly supported by the CV.
+
+3. For each matched requirement, provide concise evidence from the CV.
+
+4. Identify important job requirements that are not demonstrated in the CV.
+
+5. Identify requirements where the CV provides partial or weak evidence.
+
+6. If an application deadline is provided:
+   - determine how much time remains;
+   - evaluate which missing or weak skills could realistically be improved before the deadline;
+   - include ONLY realistically achievable improvements in the roadmap;
+   - do not include skills that require unrealistic amounts of time to develop.
+
+7. Provide truthful recommendations for improving the CV using the candidate's existing experience.
+
+8. Generate a tailored cover letter based only on verified information from the CV and job description.
+
+IMPORTANT:
+Do not invent experience.
+Do not assume a skill exists without evidence.
+Do not treat the score as hiring probability.
+Do not recommend unrealistic skill improvements.
