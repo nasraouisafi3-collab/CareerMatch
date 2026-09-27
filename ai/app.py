@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
@@ -24,7 +25,30 @@ def build_prompt(
     job_description: str,
     deadline: Optional[str] = None,
 ) -> str:
-    deadline_value = deadline if deadline else "No deadline provided."
+
+    if deadline:
+        try:
+            deadline_date = datetime.strptime(
+                deadline,
+                "%Y-%m-%d"
+            ).date()
+
+            today = date.today()
+            days_remaining = (deadline_date - today).days
+
+            deadline_value = (
+                f"{deadline} "
+                f"({days_remaining} calendar days remaining from today)."
+            )
+
+        except ValueError:
+            deadline_value = (
+                f"{deadline} "
+                f"(invalid deadline format)."
+            )
+
+    else:
+        deadline_value = "No deadline provided."
 
     return ANALYSIS_PROMPT.format(
         cv_text=cv_text,
@@ -69,4 +93,53 @@ def analyze_career_match(
             "Gemini returned an invalid structured response."
         )
 
-    return response.parsed
+    result = response.parsed
+
+    # Hard safety check:
+    # Never allow a roadmap item to exceed the available
+    # time before the application deadline.
+    if deadline:
+        try:
+            deadline_date = datetime.strptime(
+                deadline,
+                "%Y-%m-%d"
+            ).date()
+
+            today = date.today()
+            days_remaining = (deadline_date - today).days
+
+            if days_remaining <= 0:
+                result.roadmap = []
+
+            else:
+                valid_roadmap = []
+
+                for item in result.roadmap:
+                    try:
+                        duration_text = item.days.lower()
+
+                        digits = "".join(
+                            character
+                            for character in duration_text
+                            if character.isdigit()
+                        )
+
+                        if not digits:
+                            continue
+
+                        duration_days = int(digits)
+
+                        if duration_days <= days_remaining:
+                            valid_roadmap.append(item)
+
+                    except (ValueError, AttributeError):
+                        continue
+
+                result.roadmap = valid_roadmap
+
+        except ValueError:
+            # Invalid deadline format:
+            # do not apply deadline-based roadmap filtering.
+            pass
+
+    return result
