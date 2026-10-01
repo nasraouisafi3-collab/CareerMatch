@@ -778,3 +778,62 @@ footer {
 .result-item.missing {
   border-left: 3px solid #e05252;
 }
+
+
+
+/* Upload success state */
+
+.upload-success {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.08);
+  max-width: 100%;
+}
+
+.upload-success-title {
+  color: #16a34a;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.upload-success-file {
+  margin-top: 3px;
+  color: var(--text-muted, #6b7280);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+
+
+.wordmark {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+
+.wordmark {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.deadline-input {
+  color: #000;
+}

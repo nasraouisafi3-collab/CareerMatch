@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   ArrowLeft,
@@ -9,10 +9,14 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const API_URL = "http://127.0.0.1:8000/analyze";
-const PDF_API_URL = "http://127.0.0.1:8000/extract-pdf";
+const API_URL = "https://careermatch-api-live.vercel.app/analyze";
+const PDF_API_URL = "https://careermatch-api-live.vercel.app/extract-pdf";
 
 function App() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [cv, setCv] = useState("");
   const [job, setJob] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -21,29 +25,36 @@ function App() {
   const [jobFileName, setJobFileName] = useState("");
 
   const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    if (result) {
+      window.scrollTo(0, 0);
+    }
+  }, [result]);
+
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState("");
   const [error, setError] = useState("");
 
-  async function handlePdfUpload(event, type) {
+  async function handleFileUpload(event, type) {
     const file = event.target.files?.[0];
 
     if (!file) return;
 
-    if (file.type !== "application/pdf") {
-      setError("Please choose a PDF file.");
-      event.target.value = "";
-      return;
-    }
+   if (file.type !== "application/pdf") {
+  setError("This file format isn't supported yet. Please use a PDF.");
+  event.target.value = "";
+  return;
+}
 
     setError("");
     setUploading(type);
 
     if (type === "cv") {
-      setCvFileName(`Reading ${file.name}...`);
-    } else {
-      setJobFileName(`Reading ${file.name}...`);
-    }
+  setCvFileName("");
+} else {
+  setJobFileName("");
+}
 
     const formData = new FormData();
     formData.append("file", file);
@@ -175,7 +186,15 @@ function App() {
     return (
       <main className="app">
         <nav className="nav">
-          <div className="wordmark">CareerMatch</div>
+        <button
+  className="wordmark"
+  onClick={() => {
+    setResult(null);
+    window.scrollTo(0, 0);
+  }}
+>
+  CareerMatch
+</button>
 
           <button
             className="back-button"
@@ -441,10 +460,10 @@ function App() {
             </div>
 
             <textarea
-              value={cv}
-              onChange={handleCvChange}
-              placeholder="Paste your CV here..."
-            />
+  value={cv}
+  onChange={handleCvChange}
+  placeholder="Paste your CV here, or add it using the button below..."
+/>
 
             <div className="editor-bottom">
               <div className="editor-meta">
@@ -453,27 +472,28 @@ function App() {
                 </div>
 
                 {cvFileName && (
-                  <div className="uploaded-file">
-                    {uploading === "cv" ? "⏳ " : "✓ "}
-                    {cvFileName}
-                  </div>
-                )}
+  <div className="upload-success">
+    <div className="upload-success-title">
+      ✓ CV uploaded
+    </div>
+
+    <div className="upload-success-file">
+      {cvFileName}
+    </div>
+  </div>
+)}
               </div>
 
               <label className="upload-button">
                 <Upload size={15} />
 
-                <span>
-                  {uploading === "cv"
-                    ? "Reading..."
-                    : "Upload PDF"}
-                </span>
+                <span>Browse</span>
 
                 <input
                   type="file"
                   accept=".pdf,application/pdf"
                   onChange={(event) =>
-                    handlePdfUpload(event, "cv")
+                    handleFileUpload(event, "cv")
                   }
                   hidden
                 />
@@ -490,7 +510,7 @@ function App() {
                   strokeWidth={1.8}
                 />
 
-                <span>JOB OPPORTUNITY</span>
+                <span>JOB OFFER</span>
               </div>
 
               <span className="required">
@@ -498,11 +518,11 @@ function App() {
               </span>
             </div>
 
-            <textarea
-              value={job}
-              onChange={handleJobChange}
-              placeholder="Paste the job description here..."
-            />
+           <textarea
+  value={job}
+  onChange={handleJobChange}
+  placeholder="Paste a job offer, URL, or description here..."
+/>
 
             <div className="editor-bottom">
               <div className="editor-meta">
@@ -511,31 +531,32 @@ function App() {
                 </div>
 
                 {jobFileName && (
-                  <div className="uploaded-file">
-                    {uploading === "job" ? "⏳ " : "✓ "}
-                    {jobFileName}
-                  </div>
-                )}
+  <div className="upload-success">
+    <div className="upload-success-title">
+      ✓ Job offer added
+    </div>
+
+    <div className="upload-success-file">
+      {jobFileName}
+    </div>
+  </div>
+)}
               </div>
 
               <label className="upload-button">
-                <Upload size={15} />
+  <Upload size={15} />
 
-                <span>
-                  {uploading === "job"
-                    ? "Reading..."
-                    : "Upload PDF"}
-                </span>
+  <span>Browse</span>
 
-                <input
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  onChange={(event) =>
-                    handlePdfUpload(event, "job")
-                  }
-                  hidden
-                />
-              </label>
+  <input
+    type="file"
+    accept=".pdf,application/pdf"
+    onChange={(event) =>
+      handleFileUpload(event, "job")
+    }
+    hidden
+  />
+</label>
             </div>
           </div>
         </div>
@@ -559,6 +580,8 @@ function App() {
 
           <input
             type="date"
+            colorScheme="light"
+            style={{ color: "#000" }}
             value={deadline}
             onChange={(e) =>
               setDeadline(e.target.value)
@@ -574,14 +597,11 @@ function App() {
 
         <div className="analyze-area">
           {loading && (
-            <div className="analysis-status">
-              <span className="status-pulse" />
-
-              <span>
-                Comparing your CV with the opportunity...
-              </span>
-            </div>
-          )}
+  <div className="analysis-status">
+    <span className="status-pulse" />
+    <span>Analyzing your match…</span>
+  </div>
+)}
 
           <button
             className={`analyze-button ${

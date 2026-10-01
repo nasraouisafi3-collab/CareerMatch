@@ -1,11 +1,11 @@
 from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
+import json
 
-from google import genai
-from google.genai import types
+from groq import Groq
 
-from config import GEMINI_API_KEY, GEMINI_MODEL
+from config import GROQ_API_KEY, GROQ_MODEL
 from models import CareerMatchResult
 
 
@@ -63,13 +63,13 @@ def analyze_career_match(
     deadline: Optional[str] = None,
 ) -> CareerMatchResult:
 
-    if not GEMINI_API_KEY:
+    if not GROQ_API_KEY:
         raise RuntimeError(
-            "GEMINI_API_KEY is not configured. "
+            "GROQ_API_KEY is not configured. "
             "Add it to the .env file before running CareerMatch."
         )
 
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    client = Groq(api_key=GROQ_API_KEY)
 
     prompt = build_prompt(
         cv_text=cv_text,
@@ -77,23 +77,42 @@ def analyze_career_match(
         deadline=deadline,
     )
 
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            response_mime_type="application/json",
-            response_schema=CareerMatchResult,
-            temperature=0.2,
-        ),
+    response = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "career_match_result",
+                "schema": CareerMatchResult.model_json_schema(),
+            },
+        },
     )
 
-    if not response.parsed:
+    content = response.choices[0].message.content
+
+    if not content:
         raise RuntimeError(
-            "Gemini returned an invalid structured response."
+            "Groq returned an empty response."
         )
 
-    result = response.parsed
+    try:
+        result = CareerMatchResult.model_validate(
+            json.loads(content)
+        )
+    except Exception as error:
+        raise RuntimeError(
+            f"Groq returned an invalid CareerMatch response: {error}"
+        ) from error
 
     # Hard safety check:
     # Never allow a roadmap item to exceed the available

@@ -1,0 +1,7 @@
+ai/.env
+ai/.venv/
+**/__pycache__/
+frontend/node_modules/
+frontend/dist/
+.git/
+*.pdf
